@@ -137,7 +137,7 @@ export async function serverRecordSale(
   const productMap = new Map<
     number,
     { id: number; name: string; price: number; stock: number }
-  >((productRows ?? []).map((p) => [Number(p.id), p as never]));
+  >((productRows ?? []).map((p: any) => [Number(p.id), p as never]));
 
   const warehouseId = input.warehouseId ?? null;
   let main: WarehouseRow | null = null;
@@ -243,7 +243,7 @@ export async function serverTransfer(
     .from("warehouses")
     .select("id, name")
     .eq("store_id", storeId);
-  const ids = new Set((warehouses ?? []).map((w) => Number(w.id)));
+  const ids = new Set((warehouses ?? []).map((w: any) => Number(w.id)));
   if (!ids.has(fromWarehouseId) || !ids.has(toWarehouseId)) {
     throw new Error("One or both warehouses do not belong to this store.");
   }

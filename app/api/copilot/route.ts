@@ -1,5 +1,5 @@
 import { streamText, type CoreMessage } from "ai";
-import { google } from "@ai-sdk/google";
+import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import { buildStoreContext } from "@/lib/store-context";
 import { STORE_ID } from "@/lib/tenant";
 
@@ -7,12 +7,15 @@ export const runtime = "nodejs";
 export const maxDuration = 30;
 
 export async function POST(req: Request) {
-  if (!process.env.GEMINI_API_KEY) {
+  const apiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_GENERATIVE_AI_API_KEY;
+  if (!apiKey) {
     return Response.json(
       { error: "API Key not configured" },
       { status: 400 }
     );
   }
+
+  const googleAI = createGoogleGenerativeAI({ apiKey });
 
   let body: { messages?: unknown; storeId?: unknown };
   try {
@@ -58,7 +61,7 @@ STORE DATA:
 ${JSON.stringify(context)}`;
 
     const result = streamText({
-      model: google("gemini-2.5-flash"),
+      model: googleAI(process.env.GEMINI_MODEL || "gemini-2.0-flash"),
       system,
       messages,
     });

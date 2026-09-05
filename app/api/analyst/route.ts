@@ -1,5 +1,5 @@
 import { generateObject } from "ai";
-import { google } from "@ai-sdk/google";
+import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import { z } from "zod";
 import { buildStoreContext } from "@/lib/store-context";
 import { STORE_ID } from "@/lib/tenant";
@@ -45,12 +45,15 @@ const requestSchema = z
   .strict();
 
 export async function POST(req: Request) {
-  if (!process.env.GEMINI_API_KEY) {
+  const apiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_GENERATIVE_AI_API_KEY;
+  if (!apiKey) {
     return Response.json(
       { error: "API Key not configured" },
       { status: 400 }
     );
   }
+
+  const googleAI = createGoogleGenerativeAI({ apiKey });
 
   try {
     const parsed = requestSchema.safeParse(await req.json());
@@ -82,7 +85,7 @@ USD. Be specific: name products, cite numbers, and compare against the previous
 month where possible. Your response MUST follow the provided schema.`;
 
     const { object } = await generateObject({
-      model: google("gemini-2.5-flash"),
+      model: googleAI(process.env.GEMINI_MODEL || "gemini-2.0-flash"),
       schema: analystSchema,
       system,
       prompt: `DATA (JSON):\n${JSON.stringify(context)}\n\nQuestion:\n${prompt}`,

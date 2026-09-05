@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { Sparkles } from "lucide-react";
-import { Sparkles } from "lucide-react";
 import { STORE_ID } from "@/lib/tenant";
 import { useI18n } from "@/lib/i18n";
 

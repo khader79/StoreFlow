@@ -87,7 +87,12 @@ export async function getWarehouseInventory(
     .eq("warehouse_id", warehouseId);
 
   if (error) throw error;
-  return new Map((data ?? []).map((row) => [Number(row.product_id), Number(row.quantity)]));
+  return new Map(
+    (data ?? []).map((row: { product_id: unknown; quantity: unknown }) => [
+      Number(row.product_id),
+      Number(row.quantity),
+    ])
+  );
 }
 
 export async function getRecentTransfers(

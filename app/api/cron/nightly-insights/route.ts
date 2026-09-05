@@ -1,5 +1,5 @@
 import { generateObject } from "ai";
-import { google } from "@ai-sdk/google";
+import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import { z } from "zod";
 import { supabase } from "@/lib/supabase";
 import { buildStoreContext } from "@/lib/store-context";
@@ -95,6 +95,8 @@ export async function GET(req: Request) {
 }
 
 async function runNightlyInsights() {
+  const apiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_GENERATIVE_AI_API_KEY;
+  const googleAI = createGoogleGenerativeAI({ apiKey: apiKey || "" });
   const summary: Array<{ storeId: number; inserted: number; error?: string }> = [];
   for (const storeId of STORE_IDS) {
     try {
@@ -105,7 +107,7 @@ and opportunities such as: products at or near reorder point, fast movers about 
 sell out, declining or spiking sales, margin pressure, brand-new/dormant inventory.
 Return ONLY grounded, actionable alerts as a JSON array. Do not invent numbers.`;
       const { object } = await generateObject({
-        model: google("gemini-2.5-flash"),
+        model: googleAI(process.env.GEMINI_MODEL || "gemini-2.0-flash"),
         schema: recommendationSchema,
         system,
         prompt: `STORE DATA (JSON):\n${JSON.stringify(
